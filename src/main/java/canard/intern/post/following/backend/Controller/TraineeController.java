@@ -97,7 +97,6 @@ public class TraineeController {
 
         if ((Objects.nonNull(traineedto.getId())) && (traineedto.getId()!=id )){
                 throw new IllegalArgumentException();
-
         }
         return traineedto;
     }
