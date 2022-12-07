@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonEnumDefaultValue;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.crypto.BadPaddingException;
 import javax.validation.Valid;
@@ -92,11 +93,11 @@ public class TraineeController {
 //    }
 
     @PutMapping(path ="/{id}")
-    @ResponseStatus(HttpStatus.I_AM_A_TEAPOT)
+    //@ResponseStatus(HttpStatus.I_AM_A_TEAPOT)
     public  TraineeDto upDate( @PathVariable("id") int id,@Valid @RequestBody TraineeDto traineedto){   // pour que ça mange le body en requete
 
         if ((Objects.nonNull(traineedto.getId())) && (traineedto.getId()!=id )){
-                throw new IllegalArgumentException();
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,  String.format("Met pas deux id différents entre path(%d) et celui du stagiaire(%d) tocard",id,traineedto.getId()));
         }
         return traineedto;
     }
