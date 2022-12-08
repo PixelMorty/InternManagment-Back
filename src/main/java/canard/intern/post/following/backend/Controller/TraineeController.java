@@ -93,7 +93,7 @@ public class TraineeController {
 //    }
 
     @PutMapping(path ="/{id}")
-    //@ResponseStatus(HttpStatus.I_AM_A_TEAPOT)
+    @ResponseStatus(HttpStatus.OK)
     public  TraineeDto upDate( @PathVariable("id") int id,@Valid @RequestBody TraineeDto traineedto){   // pour que ça mange le body en requete
 
         if ((Objects.nonNull(traineedto.getId())) && (traineedto.getId()!=id )){

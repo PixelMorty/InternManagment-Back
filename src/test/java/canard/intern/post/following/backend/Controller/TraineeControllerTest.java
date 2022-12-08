@@ -11,6 +11,7 @@ import org.springframework.boot.test.json.JsonContent;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -24,9 +25,14 @@ class TraineeControllerTest {
     final static String BASE_URL = "/api/trainees";
     final static String BASE_URL_WITH_ID =BASE_URL+ "/{id}";
     @Test
-    void getAll() {
-        // TODO
-        fail("Test not implemented yet");
+    void getAll() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get(BASE_URL)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isOk()) //statut
+                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))//si c'est du JSON
+                .andExpect(MockMvcResultMatchers.jsonPath("$").isArray());// pour prendre l'objet entier: $ et lui dire que c'est un tableau
+
     }
 
     @Test
@@ -91,10 +97,18 @@ class TraineeControllerTest {
 
 
 
-    @Test
-    void add_KO_missing_required_fields() {
-        // lastnam firstname email birthdate
-        fail("Test not implemented yet");
+    @ParameterizedTest
+    @MethodSource("canard.intern.post.following.backend.Controller.fictures.TraineeJsonProvider#traineeJsonMissingOneRequiredField")
+    void add_KO_missing_required_fields(String traineeJson) throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(traineeJson)
+                )
+
+                //.andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+        ;
     }
     @Test
     void add_KO_invalid_birthDate() throws Exception {
@@ -109,15 +123,60 @@ class TraineeControllerTest {
     }
 
 
+
     @Test
-    void delete() {
-        // TODO
+    void delete_OK_trainee_deleted() throws Exception {
+        // TODO NO CONTENT
+        int id = 1;
+
+        mockMvc.perform(MockMvcRequestBuilders.delete(BASE_URL_WITH_ID,id))
+                //.andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isNoContent());
+    }
+    @Test
+    void delete_KO() {
+        // TODO on peut pas le faire  pr l'instant id not found,
         fail("Test not implemented yet");
     }
 
+
     @Test
-    void upDate() {
-        // TODO
-        fail("Test not implemented yet");
+    void upDate_KO_bad_id_good_trainee( ) throws Exception {
+     var traineeJson=   TraineeJsonProvider.traineeJsonObjectRequiredFields_WithID100().toPrettyString();
+        int id = 105;
+        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL_WITH_ID,id)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(traineeJson))
+                //.andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
+
+
+
+    @Test
+    void upDate_OK_good_id_good_trainee( ) throws Exception {
+    var traineeJson =TraineeJsonProvider.traineeJsonObjectRequiredFields_WithID100().toPrettyString();
+        int id = 100;
+        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL_WITH_ID,id)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(traineeJson))
+                //.andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isOk());
+    }
+    @ParameterizedTest
+    @MethodSource("canard.intern.post.following.backend.Controller.fictures.TraineeJsonProvider#traineeJsonMissingOneRequiredField_Id100")
+    void upDate_KO_good_id_bad_trainees(String traineeJson ) throws Exception {
+
+
+        int id = 100;
+        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL_WITH_ID,id)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(traineeJson))
+                //.andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
 }

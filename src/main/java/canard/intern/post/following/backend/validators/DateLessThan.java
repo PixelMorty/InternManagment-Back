@@ -6,6 +6,7 @@ import javax.validation.ConstraintValidatorContext;
 import javax.validation.Payload;
 import java.lang.annotation.*;
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Target({ElementType.FIELD})
 @Constraint(validatedBy = DateLessThanValidator.class)
@@ -24,6 +25,7 @@ class DateLessThanValidator implements ConstraintValidator<DateLessThan, LocalDa
 
         @Override
         public boolean isValid(LocalDate localDate, ConstraintValidatorContext contraintValidatorContext){
+                if (Objects.isNull(localDate)) return true;
                 return localDate.isBefore(LocalDate.now().minusYears(18));
         }
 }

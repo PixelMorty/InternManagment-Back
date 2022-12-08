@@ -23,6 +23,8 @@ public class TraineeDto {
     @NotBlank
     private String firstName;
     private Gender gender;
+
+    @NotNull
     @DateLessThan//TODO: replace with custim current date -18
     private LocalDate birthDate;
 
