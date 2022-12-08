@@ -2,12 +2,16 @@ package canard.intern.post.following.backend.Controller;
 
 import canard.intern.post.following.backend.Controller.fictures.TraineeJsonProvider;
 import canard.intern.post.following.backend.Dto.TraineeDto;
+import canard.intern.post.following.backend.service.TraineeService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.BDDMockito;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.json.JsonContent;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -16,14 +20,22 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import java.time.LocalDate;
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @WebMvcTest(controllers = TraineeController.class)
 class TraineeControllerTest {
     @Autowired
     MockMvc mockMvc;
+
     final static String BASE_URL = "/api/trainees";
     final static String BASE_URL_WITH_ID =BASE_URL+ "/{id}";
+
+    @MockBean
+    TraineeService traineeService;
+
     @Test
     void getAll() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get(BASE_URL)
@@ -36,14 +48,29 @@ class TraineeControllerTest {
     }
 
     @Test
-    void getById() throws Exception {
-        int id = 3;
+    void getById_OK_found() throws Exception {
+        int id = 2;
+        //prepare mock response:
+var traineeDto=TraineeDto.builder()
+                .lastName("Bond")
+                        .firstName("James")
+                                .birthDate(LocalDate.of(1950,6,12))
+                                        .email("james.bond007@org")
+                                                .id(id)
+                                                .build();
+        BDDMockito.given(traineeService.getById(id))// fait en sorte que le prochain appel de trainneService.getById(i) renvoie le trainneeDTo
+            .willReturn(Optional.of(traineeDto));
+
+        // call controller with mock http client
         mockMvc.perform(MockMvcRequestBuilders.get(BASE_URL_WITH_ID  , id).accept(MediaType.APPLICATION_JSON))
                 //.andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk()) //  check que ça renvoie bien un retour de requete 200
                 .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON)) // Check que ça envoie bien du Json
-                .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(id)) // check que l'id du Json est égal à celui d'entrée de requete
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(id)) // check que l'id du Json est égal à celui d'entrée de requette
         ;
+
+        BDDMockito.then(traineeService).should().getById(id); // vérifie que la méthode getById(id) a été appelé par traineeService
+        // cette dernière est importante et présente quasi à chaque test qui fait appel au mock (imitation) de service
     }
     @Test
     void getById_KO_xmlNotAcceptable() throws Exception {
@@ -51,12 +78,27 @@ class TraineeControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.get(BASE_URL_WITH_ID  , id).accept(MediaType.APPLICATION_XML))
               //  .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isNotAcceptable());// vérifie que le statut est 406 (réponse quand t'envoies un type (json, xml) que le serveur reconnait pas
+
+
+
     }
 
     @Test
-    void getById_KO_idNotFound(){
-        // TODO
-        fail("Test not implemented yet");
+    void getById_KO_idNotFound() throws Exception {
+        int id = 2;
+        //prepare mock response:
+        BDDMockito.given(traineeService.getById(id))// fait en sorte que le prochain appel de trainneService.getById(i) renvoie le trainneeDTo
+                .willReturn(Optional.empty());
+
+        // call controller with mock http client
+        mockMvc.perform(MockMvcRequestBuilders.get(BASE_URL_WITH_ID  , id).accept(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isNotFound())
+        ;
+
+        BDDMockito.then(traineeService).should().getById(id); // vérifie que la méthode getById(id) a été appelé par traineeService
+        // cette dernière est importante et présente quasi à chaque test qui fait appel au mock (imitation) de service
+
+
     }
 
     @Test

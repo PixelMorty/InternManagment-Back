@@ -1,6 +1,7 @@
 package canard.intern.post.following.backend.service;
 
 import canard.intern.post.following.backend.Dto.TraineeDto;
+import canard.intern.post.following.backend.exceptions.UpdateException;
 
 import java.util.List;
 import java.util.Optional;
@@ -35,18 +36,21 @@ public interface TraineeService {
     /**
      *
      *
-     * @param  traineeDto trainee to to be created (without id)
-     *  @return trainee created with its id
-     * @throws RuntimeException
+     * @param  traineeDto trainee to be created (without id)
+     * @return trainee created with its id
+     * @throws UpdateException if trainee can"t be created
      */
-    TraineeDto create(TraineeDto traineeDto); //ptet va pas marcher
+    TraineeDto create(TraineeDto traineeDto) throws UpdateException; //ptet va pas marcher
     /**
      *
-     *
-     * @param  id id of trainee, traineeDto to be updated
-     *  @return TraineeDto of trainee created
+     *update a trainee with its id if exists;
+     * replace trainee with new traineeDto infos
+     * @param  id id of trainee
+     * @param  traineeDto to be updated
+     * @return optional traineeDto of trainee created
+     * @throws UpdateException if trainee can"t be updated
      */
-    Optional<TraineeDto> update(int id, TraineeDto traineeDto); //ptet va pas marcher
+    Optional<TraineeDto> update(int id, TraineeDto traineeDto)throws UpdateException; //ptet va pas marcher
     /**
      *
      *

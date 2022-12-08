@@ -2,7 +2,9 @@ package canard.intern.post.following.backend.Controller;
 
 import canard.intern.post.following.backend.Dto.TraineeDto;
 import canard.intern.post.following.backend.enums.Gender;
+import canard.intern.post.following.backend.service.TraineeService;
 import com.fasterxml.jackson.annotation.JsonEnumDefaultValue;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
@@ -10,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.crypto.BadPaddingException;
 import javax.validation.Valid;
+import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
@@ -18,43 +21,42 @@ import java.util.Objects;
 @RequestMapping("/api/trainees")
 public class TraineeController {
 
+    @Autowired // spring stp file moi un trainee service
+    private TraineeService traineeService;
     @GetMapping
-    public List<TraineeDto> GetAll(){
-        return List.of(
-                 TraineeDto.builder()
-                         .id(1)
-                         .lastName("BopBopBop")
-                         .firstName("BopBilly")
-                         .gender(Gender.M)
-                         .birthDate(LocalDate.ofYearDay(2000,29))
-                         .build(),
-                TraineeDto.builder()
-                        .id(2)
-                        .lastName("pui")
-                        .gender(Gender.M)
-                        .firstName("maxou")
-                        .birthDate(LocalDate.ofYearDay(1850,300))
-                        .build(),
-                TraineeDto.builder()
-                        .id(3)
-                        .lastName("lesurvivant")
-                        .gender(Gender.F)
-                        .firstName("Ken")
-                        .birthDate(LocalDate.ofYearDay(1975,143))
-                        .build()
-        );
+    public List<TraineeDto> getAll(){
+//        return List.of(
+//                 TraineeDto.builder()
+//                         .id(1)
+//                         .lastName("BopBopBop")
+//                         .firstName("BopBilly")
+//                         .gender(Gender.M)
+//                         .birthDate(LocalDate.ofYearDay(2000,29))
+//                         .build(),
+//                TraineeDto.builder()
+//                        .id(2)
+//                        .lastName("pui")
+//                        .gender(Gender.M)
+//                        .firstName("maxou")
+//                        .birthDate(LocalDate.ofYearDay(1850,300))
+//                        .build(),
+//                TraineeDto.builder()
+//                        .id(3)
+//                        .lastName("lesurvivant")
+//                        .gender(Gender.F)
+//                        .firstName("Ken")
+//                        .birthDate(LocalDate.ofYearDay(1975,143))
+//                        .build()
+//        );
+        return traineeService.getAll();
     }
 
     @GetMapping(path="/{id}")
-    public TraineeDto GetById(@PathVariable int id){
-        return
-                TraineeDto.builder()
-                        .id(3)
-                        .lastName("lesurvivant")
-                        .gender(Gender.F)
-                        .firstName("Ken")
-                        .birthDate(LocalDate.ofYearDay(1975,143))
-                        .build();
+    public TraineeDto getById(@PathVariable int id){
+        var optTraineeDto= traineeService.getById(id);
+        if (optTraineeDto.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND,"id pas trouvé"); //MessageFormat.format("no id {0,int} found",id));
+        return optTraineeDto.get();
+
     }
 
     @PostMapping
